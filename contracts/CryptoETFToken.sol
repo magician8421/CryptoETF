@@ -71,7 +71,7 @@ contract CryptoETFToken is ERC20 {
         _burn(benificial, etfAmount);
     }
 
-    function modifyConsitunent(CryptoETFLibrary.Constitunent[] memory constitunents_) external onlyRebalancer  {
+    function modifyConsitunent(CryptoETFLibrary.Constitunent[] calldata constitunents_) external onlyRebalancer  {
         require(totalSupply()==0,"consituent only can be modified when totalsupply is zero");
         _modifyConsitunent(constitunents_);
     }

@@ -46,7 +46,7 @@ async function checkEtfPrice() {
   await (await twap.initPool(LINK, WETH, FEE)).wait();
   await (await twap.initPool(UNI, WETH, FEE)).wait();
   const CryptoETFTokenOralce = await ethers.getContractFactory(
-    "CryptoETFTokenOralce"
+    "CryptoETFOracle"
   );
   const ceto = await CryptoETFTokenOralce.deploy(await twap.getAddress());
   await ceto.waitForDeployment();

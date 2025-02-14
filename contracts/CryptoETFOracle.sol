@@ -4,7 +4,7 @@ import "./interfaces/ICryptoETFToken.sol";
 import "./CryptoETFLibrary.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./uniswap/UniswapV3TWAPAggregator.sol";
-contract CryptoETFTokenOralce{
+contract CryptoETFOracle{
 
     UniswapV3TWAPAggregator  uniswapV3TWAPAggregator;
     constructor(UniswapV3TWAPAggregator _uniswapV3TWAPAggregator ){
