@@ -59,7 +59,7 @@ contract CryptoETFToken is ERC20 {
     }
 
     function burn(uint256 etfAmount,address benificial) external onlyRouter{
-          require(etfAmount>0,"eft amout need greater than zero");
+        require(etfAmount>0,"eft amout need greater than zero");
         require(benificial!=address(0),"mint to can not be zero");
          //transfer token to cyptoetftoken
         for(uint i=0;i<constitunents.length;i++){

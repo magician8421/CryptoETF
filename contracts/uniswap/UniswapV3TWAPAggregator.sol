@@ -23,7 +23,6 @@ contract UniswapV3TWAPAggregator{
             require(_pool!=address(0),"pool dosen't exist");
             poolFactory[_tokenFrom][_tokenTo]=_pool;
         }
-       console.log(_pool);
        return _pool;
         
     }   
@@ -35,11 +34,9 @@ contract UniswapV3TWAPAggregator{
         uint128 amountIn,
         uint32 secondsAgo
     )  external view  returns (uint amountOut) {
-        address _pool=poolFactory[tokenIn][tokenOut];
-        console.log(_pool);
+        (address _tokenFrom,address _tokenTo)=getOrderedToken(tokenIn,tokenOut);
+        address _pool=poolFactory[_tokenFrom][_tokenTo];
         (int24 tick,)  =OracleLibrary.consult(_pool,secondsAgo);
-        console.log(tokenIn);
-        console.log(tokenIn);
         amountOut=OracleLibrary.getQuoteAtTick(tick,amountIn,tokenIn,tokenOut);
     }
 

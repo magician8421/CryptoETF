@@ -7,6 +7,7 @@ const TOKEN_0 = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 // WETH
 const TOKEN_1 = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 const DECIMALS_1 = 18n;
+const DECIMALS_2 = 6n;
 // 0.3%
 const FEE = 3000;
 // Pair
@@ -21,10 +22,19 @@ describe("UniswapV3TWAPAggregator", () => {
     await twap.waitForDeployment();
     const initPool = await twap.initPool(TOKEN_0, TOKEN_1, FEE);
     await initPool.wait();
-    const price = await twap.estimateAmountOut(
+    let price = await twap.estimateAmountOut(
+      TOKEN_1,
+      TOKEN_0,
+      10n ** DECIMALS_1,
+      10
+    );
+
+    console.log(`price: ${price}`);
+
+    price = await twap.estimateAmountOut(
       TOKEN_0,
       TOKEN_1,
-      10n ** DECIMALS_1,
+      10n ** DECIMALS_2,
       10
     );
 
