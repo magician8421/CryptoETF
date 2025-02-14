@@ -6,7 +6,7 @@ library CryptoETFLibrary{
      */
     struct  Constitunent{
         address tokenAddress;
-        uint128 distribution;
+        uint24 distribution;
     }
 
     

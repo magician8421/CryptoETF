@@ -12,7 +12,7 @@ contract CryptoETFToken is ERC20 {
 
     //Constitunent array to store Constitunent Config
     CryptoETFLibrary.Constitunent[] public   constitunents; 
-    uint128 private _totalConstitunentDistribution;
+    uint24 private _totalConstitunentDistribution;
 
     //related contracts
     address rebalancer;
@@ -28,6 +28,9 @@ contract CryptoETFToken is ERC20 {
         require(msg.sender==router,"only reblancer can execute");
         _;
     }
+
+
+
  
 
     constructor(string memory name,string memory symbol,string  memory _tokenUri,CryptoETFLibrary.Constitunent[] memory constitunents_,address router_,address rebalancer_) ERC20(name,symbol)  {
@@ -36,6 +39,10 @@ contract CryptoETFToken is ERC20 {
             router=router_;
             rebalancer=rebalancer_;
         
+    }
+
+    function getConstitunents() external view returns(CryptoETFLibrary.Constitunent[] memory,uint24){
+        return (constitunents,_totalConstitunentDistribution);
     }
 
     function mint(uint256 etfAmount,address to) external   onlyRouter{

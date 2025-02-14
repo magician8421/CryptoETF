@@ -11,15 +11,20 @@ contract CryptoETFRouter{
     //Uniswap
 
 
-   function purchaseWithEftAmout(uint256 eftAmount,address etfAddress,address to) external returns(uint256){
+   function purchaseWithExactEth(address etfAddress,uint256 minAmountOut ,address to) external payable returns(uint256){
        //caculate mint count according to distribution
-       CryptoETFLibrary.Constitunent[] memory _constitunents=ICryptoETFToken(etfAddress).constitunents();
+    //    CryptoETFLibrary.Constitunent[] memory _constitunents=ICryptoETFToken(etfAddress).getConstitunents();
 
-       for(uint i=0;i<_constitunents.length;i++){
-             CryptoETFLibrary.Constitunent memory _cons=_constitunents[i];
-             //caculate token amout
-         }
-       ICryptoETFToken(etfAddress).mint(eftAmount, to) ;
-       return 2;
+    //    for(uint i=0;i<_constitunents.length;i++){
+    //          CryptoETFLibrary.Constitunent memory _cons=_constitunents[i];
+    //          //caculate token amout
+    //      }
+    //   // ICryptoETFToken(etfAddress).mint(eftAmount, to) ;
+    //    return 2;
     }
+
+    function redeemWithExactEth(address etfAddress,uint256 minAmountOut,address to) external{
+
+    }
+
 }
