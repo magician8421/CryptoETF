@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 import "./interfaces/ICryptoETFToken.sol";
-import "./CryptoETFLibrary.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./uniswap/UniswapV3TWAPAggregator.sol";
 import "./CryptoETFToken.sol";
@@ -13,7 +12,7 @@ contract CryptoETFOracle{
         uniswapV3TWAPAggregator=_uniswapV3TWAPAggregator;
     }
     function price(address etfAddress,address tokenIn, uint32 secondsAgo) external view returns(uint256){
-      (CryptoETFLibrary.Constitunent[] memory _cons,uint24 _totalConstitunent)= ICryptoETFToken(etfAddress).getConstitunents();
+      (CryptoETFToken.Constitunent[] memory _cons,uint24 _totalConstitunent)= ICryptoETFToken(etfAddress).getConstitunents();
       uint256 amountOut;
       for(uint256 i=0;i<_cons.length;i++){
         address _token=_cons[i].tokenAddress;
@@ -29,7 +28,7 @@ contract CryptoETFOracle{
       if(totalSupply==0){
         return 0;
       }
-      (CryptoETFLibrary.Constitunent[] memory _cons,)= ICryptoETFToken(etfAddress).getConstitunents();
+      (ICryptoETFToken.Constitunent[] memory _cons,)= ICryptoETFToken(etfAddress).getConstitunents();
       uint256 totalValue=0;
       for(uint256 i=0;i<_cons.length;i++){
         address _token=_cons[i].tokenAddress;
