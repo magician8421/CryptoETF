@@ -8,4 +8,5 @@ interface ICryptoETFToken is IERC20{
     }
 
      function getConstitunents() external view returns(Constitunent[] calldata,uint24 totalConnsitunents);
+     function modifyConsitunent(Constitunent[] calldata constitunents_) external;
 }

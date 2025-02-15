@@ -27,13 +27,12 @@ contract CryptoETFToken is ERC20,ICryptoETFToken {
     }
     
     modifier onlyRebalancer{
-        require(msg.sender==router,"only reblancer can execute");
+        if(totalSupply()!=0){
+            require(msg.sender==router,"only reblancer can execute");
+        }
         _;
     }
 
-
-
- 
 
     constructor(string memory name,string memory symbol,string  memory _tokenUri,Constitunent[] memory constitunents_,address router_,address rebalancer_) ERC20(name,symbol)  {
             tokenUri=_tokenUri;
@@ -47,7 +46,7 @@ contract CryptoETFToken is ERC20,ICryptoETFToken {
         return (constitunents,_totalConstitunentDistribution);
     }
 
-    function mint(uint256 etfAmount,address to,address[] calldata tokens, uint256[] calldata amounts) external   onlyRouter{
+    function mint(uint256 etfAmount,address to,address[] calldata tokens, uint256[] calldata amounts) external  onlyRouter{
         require(etfAmount>0,"eft amout need greater than zero");
         require(to!=address(0),"mint to can not be zero");
         require(tokens.length==constitunents.length,"tokens list token need match consitutents");
@@ -73,7 +72,7 @@ contract CryptoETFToken is ERC20,ICryptoETFToken {
     }
 
     function modifyConsitunent(Constitunent[] calldata constitunents_) external onlyRebalancer  {
-        require(totalSupply()==0,"consituent only can be modified when totalsupply is zero");
+      
         _modifyConsitunent(constitunents_);
     }
       

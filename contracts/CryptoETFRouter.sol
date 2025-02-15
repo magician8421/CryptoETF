@@ -7,10 +7,14 @@ import "./CryptoETFOracle.sol";
 import "uniswap-v3-periphery-0.8/contracts/interfaces/ISwapRouter.sol";
 
 pragma solidity 0.8.28;
+/**
+ * @title CryptoETFRouter
+ * @author Wayne.tong
+ * @notice 
+ */
 contract CryptoETFRouter{ 
 
 
- 
     // WETH
     address immutable WETH;
     //ORACLE
@@ -28,7 +32,13 @@ contract CryptoETFRouter{
     }
 
 
-
+    /**
+     * purchase etf using eth
+     * @param etfAddress the address of etf
+     * @param to  address etf mint to
+     * @param minAmountOut min amout out of etf expected
+     * @param deadline transaction timeout
+     */
     function purchaseWithExactEth(address etfAddress ,address to,uint256 minAmountOut,uint256 deadline) external payable returns(uint256 mintAmount){
         require(msg.value>0,"need send eth");
         mintAmount=100;
@@ -53,7 +63,14 @@ contract CryptoETFRouter{
         require(mintAmount>=minAmountOut,"amountOut is less than minAmountOut");
     }
 
-    function redeemWithExactEth(address etfAddress,uint256 redeemAmount,address to,uint256 minAmountOut,uint256 _deadline) external returns(uint256 amountOut){
+    /**
+     * redeem etf to eth
+     * @param etfAddress the address of etf
+     * @param to  address to recieve eth
+     * @param minAmountOut min amout out of eth expected
+     * @param deadline transaction timeout
+     */
+    function redeemWithExactEth(address etfAddress,uint256 redeemAmount,address to,uint256 minAmountOut,uint256 deadline) external returns(uint256 amountOut){
         require(redeemAmount>0,"redeem amount need greater than zero");
         uint256 _totalSupply=ICryptoETFToken(etfAddress).totalSupply();
         require(_totalSupply>0,"no enough etf can be redeemed");
@@ -70,7 +87,7 @@ contract CryptoETFRouter{
                 tokenOut:WETH,
                 fee:30000,       
                 recipient:to,
-                deadline:_deadline,
+                deadline:deadline,
                 amountIn:_burnAmount,
                 amountOutMinimum:0,
                 sqrtPriceLimitX96:0
