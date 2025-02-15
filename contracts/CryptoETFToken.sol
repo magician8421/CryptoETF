@@ -14,6 +14,9 @@ contract CryptoETFToken is ERC20 {
     CryptoETFLibrary.Constitunent[] public   constitunents; 
     uint24 private _totalConstitunentDistribution;
 
+    //reserves of each constitunents
+    mapping(address=>uint256) public constitunentsReserves;
+
     //related contracts
     address rebalancer;
     address router;
@@ -51,9 +54,8 @@ contract CryptoETFToken is ERC20 {
          //transfer token to cyptoetftoken
          for(uint i=0;i<constitunents.length;i++){
              CryptoETFLibrary.Constitunent memory _cons=constitunents[i];
-             //caculate token amout
-             uint256 _tokenAmount=etfAmount*_cons.distribution/_totalConstitunentDistribution;
-             IERC20(_cons.tokenAddress).transferFrom(to,address(this), _tokenAmount);
+             
+           //  IERC20(_cons.tokenAddress).transferFrom(msg.sender,address(this), _tokenAmount);
          }
         _mint(to, etfAmount);
     }
