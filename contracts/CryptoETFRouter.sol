@@ -46,16 +46,16 @@ contract CryptoETFRouter{
         if(ICryptoETFToken(etfAddress).totalSupply()==0){
             
            //calc constitunent token and swap to router
-           (address[] memory tokensOuts, uint256[] memory amountOuts)=_mintByConstitunent(etfAddress,WETH,msg.value,deadline);
+           (address[] memory tokensOuts, uint256[] memory amountOuts)=_swapByConstitunent(etfAddress,WETH,msg.value,deadline);
            //caculate sharecount and mint 100 fixed as 
            CryptoETFToken(etfAddress).mint(mintAmount,to,tokensOuts,amountOuts);
     
 
         }else{
             //calc constitunent token and swap to router
-           (address[] memory tokensOuts, uint256[] memory amountOuts)= _mintByConstitunent(etfAddress,WETH,msg.value,deadline);
+           (address[] memory tokensOuts, uint256[] memory amountOuts)= _swapByConstitunent(etfAddress,WETH,msg.value,deadline);
             //caculate current etf price
-            uint256 nav=cryptoETFOracle.NAV(etfAddress,WETH,10);
+            uint256 nav=cryptoETFOracle.nav(etfAddress,WETH,10);
             mintAmount=msg.value/nav;
             CryptoETFToken(etfAddress).mint(mintAmount,to,tokensOuts,amountOuts);
 
@@ -102,27 +102,58 @@ contract CryptoETFRouter{
      * mint constitunent token according to the constitunent list
      * value of each token= eth * distribution/totalConstitunent
      */
-    function _mintByConstitunent(address _etfAddress,address _tokenIn,uint256 _swapAmount,uint256 _deadline)  private returns(address[] memory tokensOuts, uint256[] memory amountOuts){
+    function _swapByConstitunent(address _etfAddress,address _tokenIn,uint256 amountIn,uint256 _deadline)  private returns(address[] memory tokensOuts, uint256[] memory amountOuts){
        (ICryptoETFToken.Constitunent[] memory _cons,uint24 _totalConstitunent)= ICryptoETFToken(_etfAddress).getConstitunents();
        tokensOuts=new address[](_cons.length);
        amountOuts=new uint256[](_cons.length);
+       console.log(amountIn);
        for(uint256 i=0;i<_cons.length;i++){
             address _token=_cons[i].tokenAddress;
-            uint256 _mintAmount=(_swapAmount*_cons[i].distribution/_totalConstitunent)/(cryptoETFOracle.price(_token,WETH,5));
+            //tokenprice 
+            uint256 amountInForConstitunent=amountIn*_cons[i].distribution/_totalConstitunent;
             //invoke uniswap swap method  to swap token to etf  
-            uint256 _amountOut=router.exactInputSingle(ISwapRouter.ExactInputSingleParams({
-                tokenIn:_tokenIn,
-                tokenOut:_token,
-                fee:30000,       
-                recipient:_etfAddress,
-                deadline:_deadline,
-                amountIn:_mintAmount,
-                amountOutMinimum:0,
-                sqrtPriceLimitX96:0
-            }));
+            // Perform swap
+            SwapParams memory params = SwapParams({
+                tokenIn: _tokenIn,
+                tokenOut: _token,
+                amountIn: amountInForConstitunent,
+                deadline: _deadline,
+                recipient: _etfAddress
+            });
+            uint256 _amountOut=_swapToken(params);
             tokensOuts[i]=_token;
             amountOuts[i]=_amountOut;
        }
     }
+    // function _calculateMintAmount(uint256 _swapAmount, uint256 _distribution, uint24 _totalConstitunent, address _token)  private view  returns (uint256 _amountOut){
+    //      uint256 numerator = _swapAmount * _distribution;
+    //      uint256 denominator = _totalConstitunent * cryptoETFOracle.uniswapV3TWAPAggregator().estimateAmountOut(_token, WETH, uint128(10**IERC20Metadata(_token).decimals()), 5);
+    //      return numerator / denominator;
+    // }
+
+    function _swapToken(SwapParams memory params)   private  returns (uint256 _amountOut){
+         _amountOut=router.exactInputSingle{value:params.amountIn}(ISwapRouter.ExactInputSingleParams({
+                tokenIn:params.tokenIn,
+                tokenOut:params.tokenOut,
+                fee:30000,       
+                recipient:params.recipient,
+                deadline:params.deadline,
+                amountIn:params.amountIn,
+                amountOutMinimum:0,
+                sqrtPriceLimitX96:0
+            }));
+    }
+
+
+    //use struct to reduce stack-too-deep error
+    struct SwapParams {
+        address tokenIn;
+        address tokenOut;
+        uint256 amountIn;
+        uint256 deadline;
+        address recipient;
+    }
+
+    
 
 }
