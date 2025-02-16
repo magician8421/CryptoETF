@@ -29,7 +29,9 @@ async function mint() {
   console.log("oracle address=>", await ceto.getAddress());
   //deploy router
   const routerContract = await ethers.getContractFactory("CryptoETFRouter");
-  const router = await routerContract.deploy(ceto, UNISWAPROUTER, WETH);
+  const router = await routerContract.deploy(ceto, UNISWAPROUTER, WETH, {
+    value: ethers.parseUnits("100"),
+  });
   await router.waitForDeployment();
   console.log("cryptoetf router address=>", await router.getAddress());
 

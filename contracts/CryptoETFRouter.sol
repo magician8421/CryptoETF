@@ -5,7 +5,7 @@ import "./interfaces/ICryptoETFToken.sol";
 import "./CryptoETFToken.sol";
 import "./CryptoETFOracle.sol";
 import "uniswap-v3-periphery-0.8/contracts/interfaces/ISwapRouter.sol";
-
+import "./interfaces/IWETH.sol";
 pragma solidity 0.8.28;
 /**
  * @title CryptoETFRouter
@@ -25,7 +25,7 @@ contract CryptoETFRouter{
 
     
     //constructor
-    constructor(CryptoETFOracle _cryptoETFOracle,ISwapRouter _router,address _weth){
+    constructor(CryptoETFOracle _cryptoETFOracle,ISwapRouter _router,address _weth) payable{
         cryptoETFOracle=_cryptoETFOracle;
         router=_router;
         WETH=_weth;
@@ -40,20 +40,26 @@ contract CryptoETFRouter{
      * @param deadline transaction timeout
      */
     function purchaseWithExactEth(address etfAddress ,address to,uint256 minAmountOut,uint256 deadline) external payable returns(uint256 mintAmount){
+       
         require(msg.value>0,"need send eth");
+        uint256 amountIn=msg.value;
         mintAmount=100;
+        //wrap eth to weth
+        IWETH9(WETH).deposit{value:amountIn}();
+        //approve weth to router
+        ICryptoETFToken(WETH).approve(address(router),amountIn);
         //if it's first time to mint using caculated IDO PRCIE
         if(ICryptoETFToken(etfAddress).totalSupply()==0){
             
            //calc constitunent token and swap to router
-           (address[] memory tokensOuts, uint256[] memory amountOuts)=_swapByConstitunent(etfAddress,WETH,msg.value,deadline);
+           (address[] memory tokensOuts, uint256[] memory amountOuts)=_swapByConstitunent(etfAddress,WETH,amountIn,deadline);
            //caculate sharecount and mint 100 fixed as 
            CryptoETFToken(etfAddress).mint(mintAmount,to,tokensOuts,amountOuts);
     
 
         }else{
             //calc constitunent token and swap to router
-           (address[] memory tokensOuts, uint256[] memory amountOuts)= _swapByConstitunent(etfAddress,WETH,msg.value,deadline);
+           (address[] memory tokensOuts, uint256[] memory amountOuts)= _swapByConstitunent(etfAddress,WETH,amountIn,deadline);
             //caculate current etf price
             uint256 nav=cryptoETFOracle.nav(etfAddress,WETH,10);
             mintAmount=msg.value/nav;
@@ -106,7 +112,7 @@ contract CryptoETFRouter{
        (ICryptoETFToken.Constitunent[] memory _cons,uint24 _totalConstitunent)= ICryptoETFToken(_etfAddress).getConstitunents();
        tokensOuts=new address[](_cons.length);
        amountOuts=new uint256[](_cons.length);
-       console.log(amountIn);
+
        for(uint256 i=0;i<_cons.length;i++){
             address _token=_cons[i].tokenAddress;
             //tokenprice 
@@ -132,12 +138,20 @@ contract CryptoETFRouter{
     // }
 
     function _swapToken(SwapParams memory params)   private  returns (uint256 _amountOut){
-         _amountOut=router.exactInputSingle{value:params.amountIn}(ISwapRouter.ExactInputSingleParams({
+        console.log(params.tokenIn);
+        console.log(params.tokenOut);
+        console.log(params.recipient);
+        console.log(params.deadline);
+        console.log(params.amountIn);
+        console.log(block.timestamp);
+        console.log(address(this).balance);
+        console.log(ICryptoETFToken(WETH).balanceOf(address(this)));
+         _amountOut=router.exactInputSingle(ISwapRouter.ExactInputSingleParams({
                 tokenIn:params.tokenIn,
                 tokenOut:params.tokenOut,
                 fee:30000,       
                 recipient:params.recipient,
-                deadline:params.deadline,
+                deadline:block.timestamp+300,
                 amountIn:params.amountIn,
                 amountOutMinimum:0,
                 sqrtPriceLimitX96:0
