@@ -18,7 +18,7 @@ contract CryptoETFRouter{
     // WETH
     address immutable WETH;
     //ORACLE
-    CryptoETFOracle private  cryptoETFOracle;
+    CryptoETFOracle public cryptoETFOracle;
 
     //ISwapRouter 
     ISwapRouter   private     immutable router;

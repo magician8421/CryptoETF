@@ -14,7 +14,7 @@ contract CryptoETFOracle{
     function nav(address etfAddress,address tokenOut, uint32 secondsAgo) external view returns(uint256){
       uint256 totalSupply=ICryptoETFToken(etfAddress).totalSupply();
       if(totalSupply==0){
-        return 0;
+        return 100;
       }
       (ICryptoETFToken.Constitunent[] memory _cons,)= ICryptoETFToken(etfAddress).getConstitunents();
       uint256 totalValue=0;
