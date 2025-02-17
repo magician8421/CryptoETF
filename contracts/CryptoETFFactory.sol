@@ -8,6 +8,8 @@ contract CryptoETFTokenFactory{
     address  public rebalancer;
     mapping(string=>address) public  etfListM;
     address[] public  etfs;
+
+    event ETFCREATED(string indexed,address );
     constructor(address _router,address _rebalancer){
         router=_router;
         rebalancer=_rebalancer;
@@ -20,6 +22,7 @@ contract CryptoETFTokenFactory{
         address etf= address(new CryptoETFToken(name,symbol,tokenUri,constitunents,address(router),rebalancer));
         etfListM[symbol]=etf;
         etfs.push(etf);
+        emit ETFCREATED(symbol,etf);
         return etf;
     }
 

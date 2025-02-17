@@ -9,7 +9,7 @@ import "./interfaces/IWETH.sol";
 pragma solidity 0.8.28;
 /**
  * @title CryptoETFRouter
- * @author Wayne.tong
+ * @author Wayne.tong 
  * @notice 
  */
 contract CryptoETFRouter{ 
@@ -70,6 +70,7 @@ contract CryptoETFRouter{
 
         }
         require(mintAmount>=minAmountOut,"amountOut is less than minAmountOut");
+        console.log(IWETH9(WETH).balanceOf(address(this)));
     }
 
     /**
@@ -108,7 +109,7 @@ contract CryptoETFRouter{
         //swap weth to eth 
          IWETH9(WETH).withdraw(amountOut);
          //send eth to address to
-       // payable(to).transfer(amountOut);
+         payable(to).transfer(amountOut);
 
 
     }
@@ -140,11 +141,7 @@ contract CryptoETFRouter{
             amountOuts[i]=_amountOut;
        }
     }
-    // function _calculateMintAmount(uint256 _swapAmount, uint256 _distribution, uint24 _totalConstitunent, address _token)  private view  returns (uint256 _amountOut){
-    //      uint256 numerator = _swapAmount * _distribution;
-    //      uint256 denominator = _totalConstitunent * cryptoETFOracle.uniswapV3TWAPAggregator().estimateAmountOut(_token, WETH, uint128(10**IERC20Metadata(_token).decimals()), 5);
-    //      return numerator / denominator;
-    // }
+ 
 
     function _swapToken(SwapParams memory params)   private  returns (uint256 _amountOut){
          _amountOut=router.exactInputSingle(ISwapRouter.ExactInputSingleParams({
@@ -169,6 +166,11 @@ contract CryptoETFRouter{
         address recipient;
     }
 
-    
+    /**
+     * need recieve eth when execute IWETH.withdraw
+     */
+    receive() external payable {
+        
+    }
 
 }
