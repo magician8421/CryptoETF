@@ -29,36 +29,33 @@ async function swap() {
 
 async function pool() {
   // 获取 Uniswap V3 Router 合约工厂
-  const routerContract = await ethers.getContractFactory("UniswapV3Router");
-  const router = await routerContract.deploy();
+  // const routerContract = await ethers.getContractFactory("UniswapV3Router");
+  // const router = await routerContract.deploy();
 
-  // 获取池子地址
-  const tokenA = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
-  const tokenB = "0x514910771af9ca656af840dff83e8264ecf986ca"; // LINK
-  const fee = 30000; // 0.3% fee tier
+  // // 获取池子地址
+  // const tokenA = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
+  // const tokenB = "0x514910771af9ca656af840dff83e8264ecf986ca"; // LINK
+  // const fee = 10000; // 0.3% fee tier
 
-  const poolAddress = await router.getPool(tokenA, tokenB, fee);
+  // const poolAddress = await router.getPool(tokenA, tokenB, fee);
 
-  if (poolAddress === "0x00000000000000000000") {
-    console.error("Pool does not exist for the given tokens and fee tier.");
-    return;
-  }
+  // if (poolAddress === "0x00000000000000000000") {
+  //   console.error("Pool does not exist for the given tokens and fee tier.");
+  //   return;
+  // }
 
-  console.log("Pool Address:", poolAddress);
+  // console.log("Pool Address:", poolAddress);
 
   // 初始化池子合约实例
+  console.log(
+    "code=>",
+    await ethers.provider.getCode("0xa6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8")
+  );
   const poolContract = new ethers.Contract(
-    "0xa6cc3c2531fdaa6ae1a3ca84c2855806728693e8",
+    "0xa6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8",
     IUniswapV3PoolABI,
     ethers.provider
   );
-
-  // 检查池子是否已初始化
-  const slot0 = await poolContract.slot0();
-  if (slot0.sqrtPriceX96.toString() === "0") {
-    console.error("Pool is not initialized.");
-    return;
-  }
 
   // 调用 liquidity() 方法
   const liquidity = await poolContract.liquidity();

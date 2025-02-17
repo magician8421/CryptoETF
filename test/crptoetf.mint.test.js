@@ -13,14 +13,10 @@ const FEE = 3000;
 async function mint() {
   const [signer1] = await ethers.getSigners();
   //deploy oracle
-  const UniswapV3TWAPAggregator = await ethers.getContractFactory(
-    "UniswapV3TWAPAggregator"
-  );
-  const twap = await UniswapV3TWAPAggregator.deploy(FACTORY);
+  const UniswapV3TWAP = await ethers.getContractFactory("UniswapV3TWAP");
+  const twap = await UniswapV3TWAP.deploy(FACTORY);
   await twap.waitForDeployment();
   console.log("twap address=>", await twap.getAddress());
-  await (await twap.initPool(LINK, WETH, FEE)).wait();
-  await (await twap.initPool(UNI, WETH, FEE)).wait();
   const CryptoETFTokenOralce = await ethers.getContractFactory(
     "CryptoETFOracle"
   );
@@ -66,13 +62,27 @@ async function mint() {
   //100s超时
   let deadline = Math.round(new Date().getTime() / 1000) + 100;
   //mint 100
-  //address etfAddress ,address to,uint256 minAmountOut,uint256 deadline
+
+  console.log(
+    "IDO EFT NAV=>",
+    ethers.formatEther(await ceto.nav(await etf.getAddress(), WETH, 10)),
+    "ETH"
+  );
   await router.purchaseWithExactEth(
     await etf.getAddress(),
     signer1.address,
     0,
     deadline,
-    { value: ethers.parseUnits("0.2") }
+    { value: ethers.parseUnits("0.4") }
+  );
+  //检查etf reverse
+  console.log("RESERVE LINK IN ETF=>", await etf.constitunentsReserves(LINK));
+  console.log("RESERVE WETH IN ETF=>", await etf.constitunentsReserves(UNI));
+  console.log("MINT TOTAL  ETF=>", await etf.totalSupply());
+  console.log(
+    "AFTER  EFT NAV=>",
+    ethers.formatEther(await ceto.nav(await etf.getAddress(), WETH, 10)),
+    "ETH"
   );
 }
 mint();

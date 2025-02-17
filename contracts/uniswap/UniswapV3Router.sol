@@ -30,9 +30,6 @@ function exactInputInternal(
   ExactInputParams memory params
 ) external payable returns (uint256 amountOut)  {
 
-    console.log(params.tokenIn);
-    console.log(params.tokenOut);
-   // consoel.log(type(UniswapV3Pool).creationCode());
     SwapCallbackData memory data = getSwapData(params.tokenIn, params.tokenOut, params.fee);
     if (params.recipient == address(0)) params.recipient = address(this);
 
@@ -57,7 +54,7 @@ function _swap(
     uint160 sqrtPriceLimitX96,
     SwapCallbackData memory data
 ) internal returns (uint256 amountOut) {
-
+    console.logBytes(abi.encodeWithSelector(IUniswapV3PoolActions.swap.selector));
     (int256 amount0, int256 amount1) = pool.swap(
         recipient,
         zeroForOne,
@@ -78,7 +75,7 @@ function _swap(
     ) public view returns (IUniswapV3Pool) {
         console.log(tokenA);
         console.log(tokenB);
-        return IUniswapV3Pool(0xc40C51c49E7932A1147c5cc733bd32f06E94a816);
+        return IUniswapV3Pool(0xa6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8);
        // return IUniswapV3Pool(PoolAddress.computeAddress(factory, PoolAddress.getPoolKey(tokenA, tokenB, fee)));
     }
 

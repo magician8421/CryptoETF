@@ -22,6 +22,8 @@ contract CryptoETFRouter{
 
     //ISwapRouter 
     ISwapRouter   private     immutable router;
+    
+
 
     
     //constructor
@@ -43,14 +45,15 @@ contract CryptoETFRouter{
        
         require(msg.value>0,"need send eth");
         uint256 amountIn=msg.value;
-        mintAmount=100;
         //wrap eth to weth
         IWETH9(WETH).deposit{value:amountIn}();
         //approve weth to router
         ICryptoETFToken(WETH).approve(address(router),amountIn);
         //if it's first time to mint using caculated IDO PRCIE
         if(ICryptoETFToken(etfAddress).totalSupply()==0){
-            
+        
+           uint256 nav=cryptoETFOracle.IDO_PRICE();
+           mintAmount=msg.value/nav;
            //calc constitunent token and swap to router
            (address[] memory tokensOuts, uint256[] memory amountOuts)=_swapByConstitunent(etfAddress,WETH,amountIn,deadline);
            //caculate sharecount and mint 100 fixed as 
@@ -91,7 +94,7 @@ contract CryptoETFRouter{
             amountOut+=router.exactInputSingle(ISwapRouter.ExactInputSingleParams({
                 tokenIn:_token,
                 tokenOut:WETH,
-                fee:30000,       
+                fee:3000,       
                 recipient:to,
                 deadline:deadline,
                 amountIn:_burnAmount,
@@ -138,21 +141,12 @@ contract CryptoETFRouter{
     // }
 
     function _swapToken(SwapParams memory params)   private  returns (uint256 _amountOut){
-        console.log(params.tokenIn);
-        console.log(params.tokenOut);
-        console.log(params.recipient);
-        console.log(params.deadline);
-        console.log(params.amountIn);
-        console.log(block.timestamp);
-        console.log(address(this).balance);
-        console.log(ICryptoETFToken(WETH).balanceOf(address(this)));
-        console.log(ICryptoETFToken(WETH).allowance(address(this),address(router)));
          _amountOut=router.exactInputSingle(ISwapRouter.ExactInputSingleParams({
                 tokenIn:params.tokenIn,
                 tokenOut:params.tokenOut,
-                fee:30000,       
+                fee:3000,       
                 recipient:params.recipient,
-                deadline:block.timestamp+300,
+                deadline:params.deadline,
                 amountIn:params.amountIn,
                 amountOutMinimum:0,
                 sqrtPriceLimitX96:0

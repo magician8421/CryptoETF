@@ -56,6 +56,7 @@ async function create_swap() {
   //100s超时
   let deadline = Math.round(new Date().getTime() / 1000) + 100;
   let router = new ethers.Contract(routerAddress, RouterAbi, signer);
+
   await router.purchaseWithExactEth(etfAddress, signer.address, 0, deadline, {
     value: ethers.parseUnits("0.0004"),
   });

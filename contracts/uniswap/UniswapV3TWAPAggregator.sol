@@ -37,6 +37,7 @@ contract UniswapV3TWAPAggregator{
     )  external view  returns (uint amountOut) {
         (address _tokenFrom,address _tokenTo)=getOrderedToken(tokenIn,tokenOut);
         address _pool=poolFactory[_tokenFrom][_tokenTo];
+        console.log(_pool);
         (int24 tick,)  =OracleLibrary.consult(_pool,secondsAgo);
         amountOut=OracleLibrary.getQuoteAtTick(tick,amountIn,tokenIn,tokenOut);
     }
