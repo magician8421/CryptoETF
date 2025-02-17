@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 import "./CryptoETFToken.sol";
-import "./interfaces/ICryptoETFToken.sol";
 import "./CryptoETFToken.sol";
 import "./CryptoETFOracle.sol";
 import "uniswap-v3-periphery-0.8/contracts/interfaces/ISwapRouter.sol";
@@ -48,9 +47,9 @@ contract CryptoETFRouter{
         //wrap eth to weth
         IWETH9(WETH).deposit{value:amountIn}();
         //approve weth to router
-        ICryptoETFToken(WETH).approve(address(router),amountIn);
+        IWETH9(WETH).approve(address(router),amountIn);
         //if it's first time to mint using caculated IDO PRCIE
-        if(ICryptoETFToken(etfAddress).totalSupply()==0){
+        if(CryptoETFToken(etfAddress).totalSupply()==0){
         
            uint256 nav=cryptoETFOracle.IDO_PRICE();
            mintAmount=msg.value/nav;
@@ -82,7 +81,7 @@ contract CryptoETFRouter{
      */
     function redeemWithExactEth(address etfAddress,uint256 redeemAmount,address to,uint256 minAmountOut,uint256 deadline) external payable returns(uint256 amountOut){
         require(redeemAmount>0,"redeem amount need greater than zero");
-        uint256 _totalSupply=ICryptoETFToken(etfAddress).totalSupply();
+        uint256 _totalSupply=CryptoETFToken(etfAddress).totalSupply();
         require(_totalSupply>0,"no enough etf can be redeemed");
 
         //first burn etf  receive constitunents
@@ -90,7 +89,7 @@ contract CryptoETFRouter{
        for(uint256 i=0;i<constitunentTokens.length;i++){
             address _token=constitunentTokens[i];
             //approve uniswap to 
-            ICryptoETFToken(_token).approve(address(router),constitunentAmounts[i]);
+            CryptoETFToken(_token).approve(address(router),constitunentAmounts[i]);
             //invoke uniswap swap method  to swap token to etf  
             amountOut+=router.exactInputSingle(ISwapRouter.ExactInputSingleParams({
                 tokenIn:_token,
@@ -119,7 +118,7 @@ contract CryptoETFRouter{
      * value of each token= eth * distribution/totalConstitunent
      */
     function _swapByConstitunent(address _etfAddress,address _tokenIn,uint256 amountIn,uint256 _deadline)  private returns(address[] memory tokensOuts, uint256[] memory amountOuts){
-       (ICryptoETFToken.Constitunent[] memory _cons,uint24 _totalConstitunent)= ICryptoETFToken(_etfAddress).getConstitunents();
+       (CryptoETFToken.Constitunent[] memory _cons,uint24 _totalConstitunent)= CryptoETFToken(_etfAddress).getConstitunents();
        tokensOuts=new address[](_cons.length);
        amountOuts=new uint256[](_cons.length);
 

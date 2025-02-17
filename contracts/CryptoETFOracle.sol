@@ -23,7 +23,7 @@ contract CryptoETFOracle{
       if(totalSupply==0){
         return 0;
       }
-      (ICryptoETFToken.Constitunent[] memory _cons,)= CryptoETFToken(etfAddress).getConstitunents();
+      (CryptoETFToken.Constitunent[] memory _cons,)= CryptoETFToken(etfAddress).getConstitunents();
       uint256 totalValue=0;
       for(uint256 i=0;i<_cons.length;i++){
         address _token=_cons[i].tokenAddress;
@@ -33,7 +33,7 @@ contract CryptoETFOracle{
            totalValue+= uniswapV3TWAP.estimateAmountOut(_token,tokenOut,uint128(_tokenAmount),secondsAgo);
         }
       }
-      return totalValue/ ICryptoETFToken(etfAddress).totalSupply();
+      return totalValue/ CryptoETFToken(etfAddress).totalSupply();
     }
 
 }
