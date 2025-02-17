@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.28;
-import "uniswap-v3-periphery-0.8/contracts/libraries/PoolAddress.sol";
+import "../libraries/PoolAddress.sol";
 import "uniswap-v3-periphery-0.8/contracts/libraries/Path.sol";
 import '@uniswap/v3-core/contracts/libraries/TickMath.sol';
 import '@uniswap/v3-core/contracts/libraries/SafeCast.sol';
 import '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import "hardhat/console.sol";
+import "../interfaces/IWETH.sol";
 contract UniswapV3Router{
     
     using Path for bytes;
     address factory=0x1F98431c8aD98523631AE4a59f267346ea31F984;
     using SafeCast for uint256;
+    address  WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     struct SwapCallbackData {
         bytes path;
         address payer;
@@ -26,7 +28,11 @@ struct ExactInputParams {
 }
 function exactInputInternal(
   ExactInputParams memory params
-) external returns (uint256 amountOut) {
+) external payable returns (uint256 amountOut)  {
+
+    console.log(params.tokenIn);
+    console.log(params.tokenOut);
+   // consoel.log(type(UniswapV3Pool).creationCode());
     SwapCallbackData memory data = getSwapData(params.tokenIn, params.tokenOut, params.fee);
     if (params.recipient == address(0)) params.recipient = address(this);
 
@@ -51,6 +57,7 @@ function _swap(
     uint160 sqrtPriceLimitX96,
     SwapCallbackData memory data
 ) internal returns (uint256 amountOut) {
+
     (int256 amount0, int256 amount1) = pool.swap(
         recipient,
         zeroForOne,
@@ -68,7 +75,9 @@ function _swap(
         address tokenA,
         address tokenB,
         uint24 fee
-    ) private view returns (IUniswapV3Pool) {
+    ) public view returns (IUniswapV3Pool) {
+        console.log(tokenA);
+        console.log(tokenB);
         return IUniswapV3Pool(PoolAddress.computeAddress(factory, PoolAddress.getPoolKey(tokenA, tokenB, fee)));
     }
 
