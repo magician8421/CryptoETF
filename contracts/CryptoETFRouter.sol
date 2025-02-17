@@ -146,6 +146,7 @@ contract CryptoETFRouter{
         console.log(block.timestamp);
         console.log(address(this).balance);
         console.log(ICryptoETFToken(WETH).balanceOf(address(this)));
+        console.log(ICryptoETFToken(WETH).allowance(address(this),address(router)));
          _amountOut=router.exactInputSingle(ISwapRouter.ExactInputSingleParams({
                 tokenIn:params.tokenIn,
                 tokenOut:params.tokenOut,
