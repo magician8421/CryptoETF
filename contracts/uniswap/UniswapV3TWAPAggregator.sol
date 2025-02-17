@@ -20,6 +20,7 @@ contract UniswapV3TWAPAggregator{
         address _pool=poolFactory[_tokenFrom][_tokenTo];
         if(_pool==address(0)){
             _pool=IUniswapV3Factory(uniswapFactory).getPool(_tokenFrom,_tokenTo,_fee);
+            console.log(_pool);
             require(_pool!=address(0),"pool dosen't exist");
             poolFactory[_tokenFrom][_tokenTo]=_pool;
         }

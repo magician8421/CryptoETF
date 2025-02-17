@@ -48,7 +48,7 @@ async function pool() {
 
   // 初始化池子合约实例
   const poolContract = new ethers.Contract(
-    poolAddress,
+    "0xa6cc3c2531fdaa6ae1a3ca84c2855806728693e8",
     IUniswapV3PoolABI,
     ethers.provider
   );
@@ -66,6 +66,7 @@ async function pool() {
 }
 
 async function deposit(routerAddress) {
+  const [signer] = await ethers.getSigners();
   let contract = new ethers.Contract(
     "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
     abi,
@@ -87,4 +88,4 @@ async function deposit(routerAddress) {
   );
 }
 
-pool();
+swap();

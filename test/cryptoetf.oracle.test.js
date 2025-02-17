@@ -50,7 +50,7 @@ async function checkEtfPrice() {
   );
   const ceto = await CryptoETFTokenOralce.deploy(await twap.getAddress());
   await ceto.waitForDeployment();
-  console.log(await ceto.price(await etf.getAddress(), WETH, 10));
+  console.log(await ceto.nav(await etf.getAddress(), WETH, 10));
   //deploy
 }
 checkEtfPrice();
