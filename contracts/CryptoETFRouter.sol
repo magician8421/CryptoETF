@@ -79,7 +79,7 @@ contract CryptoETFRouter{
      * @param minAmountOut min amout out of eth expected
      * @param deadline transaction timeout
      */
-    function redeemWithExactEth(address etfAddress,uint256 redeemAmount,address to,uint256 minAmountOut,uint256 deadline) external returns(uint256 amountOut){
+    function redeemWithExactEth(address etfAddress,uint256 redeemAmount,address to,uint256 minAmountOut,uint256 deadline) external payable returns(uint256 amountOut){
         require(redeemAmount>0,"redeem amount need greater than zero");
         uint256 _totalSupply=ICryptoETFToken(etfAddress).totalSupply();
         require(_totalSupply>0,"no enough etf can be redeemed");
@@ -103,8 +103,12 @@ contract CryptoETFRouter{
             }));
         }
 
-        //swap weth to eth 
+
         require(amountOut>=minAmountOut,"amountOut is less than minAmountOut");
+        //swap weth to eth 
+         IWETH9(WETH).withdraw(amountOut);
+         //send eth to address to
+       // payable(to).transfer(amountOut);
 
 
     }

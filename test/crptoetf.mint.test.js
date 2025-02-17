@@ -81,6 +81,10 @@ async function createETF(etfFactory) {
 
 async function purchaseETF(ceto, router, etf, ethInput) {
   const [signer1] = await ethers.getSigners();
+  console.log(
+    "USER ETH=>",
+    ethers.formatEther(await ethers.provider.getBalance(signer1.address))
+  );
   let deadline = Math.round(new Date().getTime() / 1000) + 100;
   console.log("INPUT ETH=>", ethInput, "ETH");
   console.log(
@@ -120,6 +124,10 @@ async function checkResult(etf, ceto) {
     "AFTER  EFT NAV=>",
     ethers.formatEther(await ceto.nav(etf, WETH, 10)),
     "ETH"
+  );
+  console.log(
+    "USER ETH=>",
+    ethers.formatEther(await ethers.provider.getBalance(signer1.address))
   );
 }
 
