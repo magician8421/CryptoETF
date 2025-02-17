@@ -20,6 +20,8 @@ contract CryptoETFToken is ERC20,ICryptoETFToken {
     //_totalConstitunentDistribution
     uint24 private _totalConstitunentDistribution;
 
+    bool public hasMint;
+
 
     modifier onlyRouter{
         require(msg.sender==router,"only router can execute");
@@ -62,24 +64,31 @@ contract CryptoETFToken is ERC20,ICryptoETFToken {
            // IERC20(tokens[i]).safeTransferFrom(msg.sender,address(this), amounts[i]);
          }
         _mint(to, etfAmount);
+        hasMint=true;
     }
 
     /**
      *  constitunents token : etf-> msg.sender
      *  etf mint to to
      */
-    function burn(uint256 etfAmount,address from) external onlyRouter{
+    function burn(uint256 etfAmount,address from) external onlyRouter returns(address[] memory constitunentTokens,uint256[] memory constitunentAmounts){
         require(etfAmount>0,"eft amout need greater than zero");
         require(from!=address(0),"burn address can not be zero");
+        constitunentTokens=new address[](constitunents.length);
+        constitunentAmounts=new uint256[](constitunents.length);
          //transfer token to cyptoetftoken
         for(uint i=0;i<constitunents.length;i++){
              Constitunent memory _cons=constitunents[i];
              //caculate token amout= tokenAmount*etfAmount/totalSupply()
              uint256 _tokenAmount=constitunentsReserves[_cons.tokenAddress]*etfAmount/totalSupply();
+             constitunentsReserves[_cons.tokenAddress]-=_tokenAmount;
+             constitunentTokens[i]=_cons.tokenAddress;
+             constitunentAmounts[i]=_tokenAmount;
              //etf->msg.sender(router)
              IERC20(_cons.tokenAddress).safeTransfer(msg.sender, _tokenAmount);
          }
         _burn(from, etfAmount);
+        return (constitunentTokens,constitunentAmounts);
     }
 
     function modifyConsitunent(Constitunent[] calldata constitunents_) external onlyRebalancer  {

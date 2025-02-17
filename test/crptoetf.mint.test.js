@@ -18,7 +18,9 @@ async function ignition() {
   const etf = await createETF(deployFactory);
   //purchase etf
   await purchaseETF(ceto, router, etf, "0.4");
-
+  await checkResult(etf, ceto);
+  //sale etf
+  await saleETF(ceto, router, etf, 200);
   await checkResult(etf, ceto);
 }
 
@@ -91,7 +93,17 @@ async function purchaseETF(ceto, router, etf, ethInput) {
   });
 }
 
+async function saleETF(ceto, router, etf, etfAmount) {
+  console.log(`======BEGIN TO SALE ETF =====`);
+  const [signer1] = await ethers.getSigners();
+  let deadline = Math.round(new Date().getTime() / 1000) + 100;
+  console.log("SALE ETF TOKEN=>", etfAmount, "ETF");
+
+  await router.redeemWithExactEth(etf, etfAmount, signer1.address, 0, deadline);
+}
+
 async function checkResult(etf, ceto) {
+  console.log("======BEGIN TO CHECK STATE=====");
   const [signer1] = await ethers.getSigners();
   const link = await ethers.getContractAt(ERC20ABI, LINK);
   const uni = await ethers.getContractAt(ERC20ABI, UNI);

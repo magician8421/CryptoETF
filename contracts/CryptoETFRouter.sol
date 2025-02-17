@@ -83,25 +83,27 @@ contract CryptoETFRouter{
         require(redeemAmount>0,"redeem amount need greater than zero");
         uint256 _totalSupply=ICryptoETFToken(etfAddress).totalSupply();
         require(_totalSupply>0,"no enough etf can be redeemed");
-        uint24 _portion= uint24(redeemAmount/_totalSupply);
-       (ICryptoETFToken.Constitunent[] memory _cons,)= ICryptoETFToken(etfAddress).getConstitunents();
-       for(uint256 i=0;i<_cons.length;i++){
-            address _token=_cons[i].tokenAddress;
-            uint256 _constitunentReserve=CryptoETFToken(etfAddress).constitunentsReserves(_token);
-            require(_constitunentReserve>0,"no enough constitunent token can be reddemed");
-            uint256 _burnAmount=_constitunentReserve*_portion;
+
+        //first burn etf  receive constitunents
+       (address[] memory constitunentTokens,uint256[] memory constitunentAmounts) =CryptoETFToken(etfAddress).burn(redeemAmount,msg.sender);
+       for(uint256 i=0;i<constitunentTokens.length;i++){
+            address _token=constitunentTokens[i];
+            //approve uniswap to 
+            ICryptoETFToken(_token).approve(address(router),constitunentAmounts[i]);
             //invoke uniswap swap method  to swap token to etf  
             amountOut+=router.exactInputSingle(ISwapRouter.ExactInputSingleParams({
                 tokenIn:_token,
                 tokenOut:WETH,
                 fee:3000,       
-                recipient:to,
+                recipient:address(this),
                 deadline:deadline,
-                amountIn:_burnAmount,
+                amountIn:constitunentAmounts[i],
                 amountOutMinimum:0,
                 sqrtPriceLimitX96:0
             }));
         }
+
+        //swap weth to eth 
         require(amountOut>=minAmountOut,"amountOut is less than minAmountOut");
 
 
