@@ -1,17 +1,30 @@
 const { ethers } = require("hardhat");
+const ETFTOKENABI =
+  require("../artifacts/contracts/CryptoETFToken.sol/CryptoETFToken.json").abi;
+const ERC20ABI =
+  require("../artifacts/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.json").abi;
 
+//related contract address
 const FACTORY = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
-// USDC
-const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 const LINK = "0x514910771af9ca656af840dff83e8264ecf986ca";
 const UNI = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-// WETH
 const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-//UNISWAP ROUTER
 const UNISWAPROUTER = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
-const FEE = 3000;
-async function mint() {
-  const [signer1] = await ethers.getSigners();
+
+async function ignition() {
+  const [twap, ceto, router, deployFactory] = await deploy();
+
+  //create token
+  const etf = await createETF(deployFactory);
+  //purchase etf
+  await purchaseETF(ceto, router, etf, "0.4");
+
+  await checkResult(etf, ceto);
+}
+
+async function deploy() {
+  console.log("======DEPLOY CONTRACT BEGIN=======");
+
   //deploy oracle
   const UniswapV3TWAP = await ethers.getContractFactory("UniswapV3TWAP");
   const twap = await UniswapV3TWAP.deploy(FACTORY);
@@ -25,16 +38,25 @@ async function mint() {
   console.log("oracle address=>", await ceto.getAddress());
   //deploy router
   const routerContract = await ethers.getContractFactory("CryptoETFRouter");
-  const router = await routerContract.deploy(ceto, UNISWAPROUTER, WETH, {
-    value: ethers.parseUnits("100"),
-  });
+  const router = await routerContract.deploy(ceto, UNISWAPROUTER, WETH);
   await router.waitForDeployment();
   console.log("cryptoetf router address=>", await router.getAddress());
 
-  //deploy token
-  const etfContract = await ethers.getContractFactory("CryptoETFToken");
-  const zeroAddress = "0x0000000000000000000000000000000000000000";
+  //deploy factory
+  const deployFactoryContract = await ethers.getContractFactory(
+    "CryptoETFTokenFactory"
+  );
+  const deployFactory = await deployFactoryContract.deploy(
+    await router.getAddress(),
+    ethers.ZeroAddress
+  );
+  await deployFactory.waitForDeployment();
+  console.log("cryptoetf factory address=>", await deployFactory.getAddress());
+  console.log("======DEPLOY CONTRACT SUCCESS,START TO CREARTE=======");
+  return [twap, ceto, router, deployFactory];
+}
 
+async function createETF(etfFactory) {
   const constitunents = [
     {
       tokenAddress: LINK, // 替换为实际的 token 地址
@@ -48,41 +70,45 @@ async function mint() {
   const name = "MyToken";
   const symbol = "MTK";
   const tokenUri = "https://example.com/token/1";
-  const etf = await etfContract.deploy(
-    name,
-    symbol,
-    tokenUri,
-    constitunents,
-    await router.getAddress(),
-    zeroAddress
-  );
-  await etf.waitForDeployment();
-  console.log("etf token  address=>", await etf.getAddress());
+  const etf = await etfFactory.createETF(name, symbol, tokenUri, constitunents);
+  await etf.wait();
+  let etfAddress = await etfFactory.etfListM("MTK");
+  console.log(`MINT ETF===>${etfAddress}`);
+  return etfAddress;
+}
 
-  //100s超时
+async function purchaseETF(ceto, router, etf, ethInput) {
+  const [signer1] = await ethers.getSigners();
   let deadline = Math.round(new Date().getTime() / 1000) + 100;
-  //mint 100
-
+  console.log("INPUT ETH=>", ethInput, "ETH");
   console.log(
     "IDO EFT NAV=>",
-    ethers.formatEther(await ceto.nav(await etf.getAddress(), WETH, 10)),
+    ethers.formatEther(await ceto.nav(etf, WETH, 10)),
     "ETH"
   );
-  await router.purchaseWithExactEth(
-    await etf.getAddress(),
-    signer1.address,
-    0,
-    deadline,
-    { value: ethers.parseUnits("0.4") }
-  );
+  await router.purchaseWithExactEth(etf, signer1.address, 0, deadline, {
+    value: ethers.parseUnits(ethInput),
+  });
+}
+
+async function checkResult(etf, ceto) {
+  const [signer1] = await ethers.getSigners();
+  const link = await ethers.getContractAt(ERC20ABI, LINK);
+  const uni = await ethers.getContractAt(ERC20ABI, UNI);
+
+  const etfC = await ethers.getContractAt(ETFTOKENABI, etf);
   //检查etf reverse
-  console.log("RESERVE LINK IN ETF=>", await etf.constitunentsReserves(LINK));
-  console.log("RESERVE WETH IN ETF=>", await etf.constitunentsReserves(UNI));
-  console.log("MINT TOTAL  ETF=>", await etf.totalSupply());
+  console.log("RESERVE LINK IN ETF=>", await etfC.constitunentsReserves(LINK));
+  console.log("RESERVE UNI IN ETF=>", await etfC.constitunentsReserves(UNI));
+  console.log("MINT TOTAL  ETF=>", await etfC.totalSupply());
+
+  console.log("ERC20 LINK BALANCE=>", await link.balanceOf(etf));
+  console.log("ERC20 UNI BALANCE=>", await uni.balanceOf(etf));
   console.log(
     "AFTER  EFT NAV=>",
-    ethers.formatEther(await ceto.nav(await etf.getAddress(), WETH, 10)),
+    ethers.formatEther(await ceto.nav(etf, WETH, 10)),
     "ETH"
   );
 }
-mint();
+
+ignition();
