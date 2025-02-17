@@ -12,14 +12,19 @@ const FEE = 3000;
 // Pair
 // 0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8
 
-describe("UniswapV3Twap", () => {
-  it("get price", async () => {
-    const UniswapV3Twap = await ethers.getContractFactory("UniswapV3TWAP");
-    const twap = await UniswapV3Twap.deploy(FACTORY, TOKEN_0, TOKEN_1, FEE);
-    await twap.waitForDeployment();
+async function testTwap() {
+  const UniswapV3Twap = await ethers.getContractFactory("UniswapV3TWAP");
+  const twap = await UniswapV3Twap.deploy(FACTORY);
+  await twap.waitForDeployment();
 
-    const price = await twap.estimateAmountOut(TOKEN_1, 10n ** DECIMALS_1, 10);
+  const price = await twap.estimateAmountOut(
+    TOKEN_1,
+    TOKEN_0,
+    10n ** DECIMALS_1,
+    10
+  );
 
-    console.log(`price: ${price}`);
-  });
-});
+  console.log(`price: ${price}`);
+}
+
+testTwap();

@@ -5,7 +5,7 @@ const ERC20ABI =
   require("../artifacts/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.json").abi;
 
 //related contract address
-const FACTORY = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
+const UNISWAP_FACTORY = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 const LINK = "0x514910771af9ca656af840dff83e8264ecf986ca";
 const UNI = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
 const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
@@ -29,7 +29,7 @@ async function deploy() {
 
   //deploy oracle
   const UniswapV3TWAP = await ethers.getContractFactory("UniswapV3TWAP");
-  const twap = await UniswapV3TWAP.deploy(FACTORY);
+  const twap = await UniswapV3TWAP.deploy(UNISWAP_FACTORY);
   await twap.waitForDeployment();
   console.log("twap address=>", await twap.getAddress());
   const CryptoETFTokenOralce = await ethers.getContractFactory(
