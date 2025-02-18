@@ -82,6 +82,7 @@ async function createETF(etfFactory) {
   await etf.wait();
   let etfAddress = await etfFactory.etfListM("MTK");
   console.log(`MINT ETF===>${etfAddress}`);
+  console.log("ETF COUNT===>", await etfFactory.totalEtf());
   return etfAddress;
 }
 
