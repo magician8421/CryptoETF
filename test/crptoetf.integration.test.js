@@ -34,6 +34,7 @@ async function ignition() {
   const etf = await createETF(deployFactory);
   //purchase etf
   await purchaseETF(ceto, router, etf, "0.4");
+  await purchaseETF(ceto, router, etf, "0.13");
   await checkResult(etf, ceto);
   //sale etf
   await saleETF(ceto, router, etf, ethers.parseUnits("200"));
