@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 import "./CryptoETFToken.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./uniswap/UniswapV3TWAP.sol";
 import "./CryptoETFToken.sol";
 import "@uniswap/v3-core/contracts/libraries/SafeCast.sol";
+/**
+ * @title CryptoETFOracle
+ * @author wayne.tong
+ * @notice 
+ */
 contract CryptoETFOracle{
 
     UniswapV3TWAP  public uniswapV3TWAP;
@@ -14,6 +18,12 @@ contract CryptoETFOracle{
     constructor(UniswapV3TWAP _uniswapV3TWAP ){
         uniswapV3TWAP=_uniswapV3TWAP;
     }
+    /**
+     * query current nav of #eftAddress
+     * @param etfAddress address of etf 
+     * @param tokenOut  nav valued in token type
+     * @param secondsAgo how many seconds to cacluate nav in oracle
+     */
     function nav(address etfAddress,address tokenOut, uint32 secondsAgo) external view returns(uint256){
       uint256 totalSupply=CryptoETFToken(etfAddress).totalSupply();
       bool hasMint=CryptoETFToken(etfAddress).hasMint();
@@ -33,7 +43,8 @@ contract CryptoETFOracle{
            totalValue+= uniswapV3TWAP.estimateAmountOut(_token,tokenOut,uint128(_tokenAmount),secondsAgo);
         }
       }
-      return totalValue/ CryptoETFToken(etfAddress).totalSupply();
+
+      return totalValue*10**CryptoETFToken(etfAddress).decimals()/ CryptoETFToken(etfAddress).totalSupply();
     }
 
 }

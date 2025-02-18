@@ -3,7 +3,11 @@ pragma solidity 0.8.28;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/ICryptoETFToken.sol";
-
+/**
+ * @title CryptoETFToken
+ * @author wayne.tong
+ * @notice 
+ */
 contract CryptoETFToken is ERC20,ICryptoETFToken {
     using SafeERC20 for IERC20;
     string public  tokenUri;
@@ -73,6 +77,7 @@ contract CryptoETFToken is ERC20,ICryptoETFToken {
      */
     function burn(uint256 etfAmount,address from) external onlyRouter returns(address[] memory constitunentTokens,uint256[] memory constitunentAmounts){
         require(etfAmount>0,"eft amout need greater than zero");
+        require(etfAmount<=totalSupply(),"etf not enough");
         require(from!=address(0),"burn address can not be zero");
         constitunentTokens=new address[](constitunents.length);
         constitunentAmounts=new uint256[](constitunents.length);

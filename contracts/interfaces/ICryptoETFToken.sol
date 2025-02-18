@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
+/**
+ * @title ICryptoETFToken
+ * @author wayne.tong
+ * @notice 
+ */
 interface ICryptoETFToken is IERC20{
      struct  Constitunent{
         address tokenAddress;

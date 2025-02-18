@@ -42,7 +42,7 @@ async function ignition() {
   await purchaseETF(ceto, router, etfAddress, "0.4");
   await checkResult(etfAddress, ceto);
   //sale etf
-  await saleETF(ceto, router, etfAddress, 200);
+  await saleETF(ceto, router, etfAddress, ethers.parseUnits("200"));
   await checkResult(etfAddress, ceto);
 }
 

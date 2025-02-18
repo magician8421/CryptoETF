@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 import "./CryptoETFToken.sol";
-import "./CryptoETFToken.sol";
 import "./CryptoETFOracle.sol";
 import "uniswap-v3-periphery-0.8/contracts/interfaces/ISwapRouter.sol";
 import "./interfaces/IWETH.sol";
@@ -48,28 +47,16 @@ contract CryptoETFRouter{
         IWETH9(WETH).deposit{value:amountIn}();
         //approve weth to router
         IWETH9(WETH).approve(address(router),amountIn);
+        uint256 nav=cryptoETFOracle.IDO_PRICE();
         //if it's first time to mint using caculated IDO PRCIE
-        if(CryptoETFToken(etfAddress).totalSupply()==0){
-        
-           uint256 nav=cryptoETFOracle.IDO_PRICE();
-           mintAmount=msg.value/nav;
-           //calc constitunent token and swap to router
-           (address[] memory tokensOuts, uint256[] memory amountOuts)=_swapByConstitunent(etfAddress,WETH,amountIn,deadline);
-           //caculate sharecount and mint 100 fixed as 
-           CryptoETFToken(etfAddress).mint(mintAmount,to,tokensOuts,amountOuts);
-    
-
-        }else{
-            //calc constitunent token and swap to router
-           (address[] memory tokensOuts, uint256[] memory amountOuts)= _swapByConstitunent(etfAddress,WETH,amountIn,deadline);
-            //caculate current etf price
-            uint256 nav=cryptoETFOracle.nav(etfAddress,WETH,10);
-            mintAmount=msg.value/nav;
-            CryptoETFToken(etfAddress).mint(mintAmount,to,tokensOuts,amountOuts);
-
+        if(CryptoETFToken(etfAddress).totalSupply()>0){
+           nav=cryptoETFOracle.nav(etfAddress,WETH,10);
         }
+        //calc constitunent token and swap to router
+        mintAmount=msg.value/nav*10**CryptoETFToken(etfAddress).decimals();
+        (address[] memory tokensOuts, uint256[] memory amountOuts)= _swapByConstitunent(etfAddress,WETH,amountIn,deadline);
+        CryptoETFToken(etfAddress).mint(mintAmount,to,tokensOuts,amountOuts);
         require(mintAmount>=minAmountOut,"amountOut is less than minAmountOut");
-        console.log(IWETH9(WETH).balanceOf(address(this)));
     }
 
     /**

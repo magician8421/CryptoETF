@@ -36,7 +36,7 @@ async function ignition() {
   await purchaseETF(ceto, router, etf, "0.4");
   await checkResult(etf, ceto);
   //sale etf
-  await saleETF(ceto, router, etf, 200);
+  await saleETF(ceto, router, etf, ethers.parseUnits("200"));
   await checkResult(etf, ceto);
 }
 
@@ -75,6 +75,7 @@ async function deploy() {
 }
 
 async function createETF(etfFactory) {
+  console.log("======PURCHASE ETF BEGIN=======");
   const name = "MyToken";
   const symbol = "MTK";
   const tokenUri = "https://example.com/token/1";
@@ -102,6 +103,10 @@ async function purchaseETF(ceto, router, etf, ethInput) {
   await router.purchaseWithExactEth(etf, signer1.address, 0, deadline, {
     value: ethers.parseUnits(ethInput),
   });
+  //purchase secondtime
+  // await router.purchaseWithExactEth(etf, signer1.address, 0, deadline, {
+  //   value: ethers.parseUnits(ethInput),
+  // });
 }
 
 async function saleETF(ceto, router, etf, etfAmount) {
