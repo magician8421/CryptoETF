@@ -1,4 +1,5 @@
 const { ethers } = require("hardhat");
+const { getSavedContractAddresses } = require("../configs/scripts/utils");
 const ETFTOKENABI =
   require("../artifacts/contracts/CryptoETFToken.sol/CryptoETFToken.json").abi;
 const ERC20ABI =
@@ -11,16 +12,27 @@ const ETFFACTORYABI =
   require("../artifacts/contracts/CryptoETFFactory.sol/CryptoETFTokenFactory.json").abi;
 
 //related contract address
-const UNISWAP_FACTORY = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 const LINK = "0x514910771af9ca656af840dff83e8264ecf986ca";
 const UNI = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
 const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-const UNISWAPROUTER = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
+
+const constitunents = [
+  {
+    tokenAddress: LINK, // 替换为实际的 token 地址
+    distribution: 5000, // 替换为实际的 distribution 值
+  },
+  {
+    tokenAddress: UNI, // 替换为实际的 token 地址
+    distribution: 5000, // 替换为实际的 distribution 值
+  },
+];
 
 //etf contract
-const cetoAddress = "0xeF66010868Ff77119171628B7eFa0F6179779375";
-const routerAddress = "0xd544d7A5EF50c510f3E90863828EAba7E392907A";
-const factoryAddress = "0x103416cfCD0D0a32b904Ab4fb69dF6E5B5aaDf2b";
+const cetoAddress = getSavedContractAddresses()[hre.network.name]["CETO"];
+const routerAddress =
+  getSavedContractAddresses()[hre.network.name]["ETFROUTER"];
+const factoryAddress =
+  getSavedContractAddresses()[hre.network.name]["ETFFACTORY"];
 
 async function ignition() {
   const [ceto, router, factory] = await getContract();
@@ -42,16 +54,6 @@ async function getContract() {
 }
 
 async function createETF(etfFactory) {
-  const constitunents = [
-    {
-      tokenAddress: LINK, // 替换为实际的 token 地址
-      distribution: 5000, // 替换为实际的 distribution 值
-    },
-    {
-      tokenAddress: UNI, // 替换为实际的 token 地址
-      distribution: 5000, // 替换为实际的 distribution 值
-    },
-  ];
   const name = "MyToken";
   const symbol = "MTK";
   const tokenUri = "https://example.com/token/1";
@@ -101,17 +103,22 @@ async function saleETF(ceto, router, etf, etfAmount) {
 async function checkResult(etf, ceto) {
   console.log("======BEGIN TO CHECK STATE=====");
   const [signer1] = await ethers.getSigners();
-  const link = await ethers.getContractAt(ERC20ABI, LINK);
-  const uni = await ethers.getContractAt(ERC20ABI, UNI);
-
   const etfC = await ethers.getContractAt(ETFTOKENABI, etf);
-  //检查etf reverse
-  console.log("RESERVE LINK IN ETF=>", await etfC.constitunentsReserves(LINK));
-  console.log("RESERVE UNI IN ETF=>", await etfC.constitunentsReserves(UNI));
   console.log("MINT TOTAL  ETF=>", await etfC.totalSupply());
-
-  console.log("ERC20 LINK BALANCE=>", await link.balanceOf(etf));
-  console.log("ERC20 UNI BALANCE=>", await uni.balanceOf(etf));
+  //检查etf reverse
+  for (const _consti of constitunents) {
+    let _token = await ethers.getContractAt(ERC20ABI, _consti.tokenAddress);
+    console.log(
+      "RESERVE %s IN ETF=>%s",
+      _consti.tokenAddress,
+      await etfC.constitunentsReserves(_consti.tokenAddress)
+    );
+    console.log(
+      "ERC20 %s BALANCE=>",
+      _consti.tokenAddress,
+      await _token.balanceOf(etf)
+    );
+  }
   console.log(
     "AFTER  EFT NAV=>",
     ethers.formatEther(await ceto.nav(etf, WETH, 10)),
@@ -122,5 +129,4 @@ async function checkResult(etf, ceto) {
     ethers.formatEther(await ethers.provider.getBalance(signer1.address))
   );
 }
-
 ignition();

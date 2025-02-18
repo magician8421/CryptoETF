@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-
+const { saveContractAddress } = require("../configs/scripts/utils");
 const UNISWAP_FACTORY = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 //UNISWAP ROUTER
@@ -12,17 +12,21 @@ async function deploy() {
   const UniswapV3TWAP = await ethers.getContractFactory("UniswapV3TWAP");
   const twap = await UniswapV3TWAP.deploy(UNISWAP_FACTORY);
   await twap.waitForDeployment();
+  saveContractAddress(hre.network.name, "TWAP", await twap.getAddress());
   console.log("twap address=>", await twap.getAddress());
+
   const CryptoETFTokenOralce = await ethers.getContractFactory(
     "CryptoETFOracle"
   );
   const ceto = await CryptoETFTokenOralce.deploy(await twap.getAddress());
   await ceto.waitForDeployment();
+  saveContractAddress(hre.network.name, "CETO", await ceto.getAddress());
   console.log("oracle address=>", await ceto.getAddress());
   //deploy router
   const routerContract = await ethers.getContractFactory("CryptoETFRouter");
   const router = await routerContract.deploy(ceto, UNISWAPROUTER, WETH);
   await router.waitForDeployment();
+  saveContractAddress(hre.network.name, "ETFROUTER", await router.getAddress());
   console.log("cryptoetf router address=>", await router.getAddress());
 
   //deploy factory
@@ -34,6 +38,11 @@ async function deploy() {
     ethers.ZeroAddress
   );
   await deployFactory.waitForDeployment();
+  saveContractAddress(
+    hre.network.name,
+    "ETFFACTORY",
+    await deployFactory.getAddress()
+  );
   console.log("cryptoetf factory address=>", await deployFactory.getAddress());
   console.log("======DEPLOY CONTRACT SUCCESS======");
   return [twap, ceto, router, deployFactory];

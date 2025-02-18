@@ -9,7 +9,23 @@ const UNISWAP_FACTORY = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 const LINK = "0x514910771af9ca656af840dff83e8264ecf986ca";
 const UNI = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
 const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f";
 const UNISWAPROUTER = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
+
+const constitunents = [
+  {
+    tokenAddress: LINK, // 替换为实际的 token 地址
+    distribution: 30, // 替换为实际的 distribution 值
+  },
+  {
+    tokenAddress: UNI, // 替换为实际的 token 地址
+    distribution: 25, // 替换为实际的 distribution 值
+  },
+  {
+    tokenAddress: DAI, // 替换为实际的 token 地址
+    distribution: 45, // 替换为实际的 distribution 值
+  },
+];
 
 async function ignition() {
   const [twap, ceto, router, deployFactory] = await deploy();
@@ -59,16 +75,6 @@ async function deploy() {
 }
 
 async function createETF(etfFactory) {
-  const constitunents = [
-    {
-      tokenAddress: LINK, // 替换为实际的 token 地址
-      distribution: 5000, // 替换为实际的 distribution 值
-    },
-    {
-      tokenAddress: UNI, // 替换为实际的 token 地址
-      distribution: 5000, // 替换为实际的 distribution 值
-    },
-  ];
   const name = "MyToken";
   const symbol = "MTK";
   const tokenUri = "https://example.com/token/1";
@@ -109,17 +115,22 @@ async function saleETF(ceto, router, etf, etfAmount) {
 async function checkResult(etf, ceto) {
   console.log("======BEGIN TO CHECK STATE=====");
   const [signer1] = await ethers.getSigners();
-  const link = await ethers.getContractAt(ERC20ABI, LINK);
-  const uni = await ethers.getContractAt(ERC20ABI, UNI);
-
   const etfC = await ethers.getContractAt(ETFTOKENABI, etf);
-  //检查etf reverse
-  console.log("RESERVE LINK IN ETF=>", await etfC.constitunentsReserves(LINK));
-  console.log("RESERVE UNI IN ETF=>", await etfC.constitunentsReserves(UNI));
   console.log("MINT TOTAL  ETF=>", await etfC.totalSupply());
-
-  console.log("ERC20 LINK BALANCE=>", await link.balanceOf(etf));
-  console.log("ERC20 UNI BALANCE=>", await uni.balanceOf(etf));
+  //检查etf reverse
+  for (const _consti of constitunents) {
+    let _token = await ethers.getContractAt(ERC20ABI, _consti.tokenAddress);
+    console.log(
+      "RESERVE %s IN ETF=>%s",
+      _consti.tokenAddress,
+      await etfC.constitunentsReserves(_consti.tokenAddress)
+    );
+    console.log(
+      "ERC20 %s BALANCE=>",
+      _consti.tokenAddress,
+      await _token.balanceOf(etf)
+    );
+  }
   console.log(
     "AFTER  EFT NAV=>",
     ethers.formatEther(await ceto.nav(etf, WETH, 10)),
