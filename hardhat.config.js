@@ -11,7 +11,7 @@ module.exports = {
       },
     },
     docker_fork: {
-      url: "http://127.0.0.1:8000",
+      url: "http://8.140.193.68:8000",
     },
   },
 };

@@ -18,9 +18,9 @@ const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 const UNISWAPROUTER = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
 
 //etf contract
-const cetoAddress = "0x70e754531418461eF2366b72cd396337d2AD6D5d";
-const routerAddress = "0xeF66010868Ff77119171628B7eFa0F6179779375";
-const factoryAddress = "0xd544d7A5EF50c510f3E90863828EAba7E392907A";
+const cetoAddress = "0xeF66010868Ff77119171628B7eFa0F6179779375";
+const routerAddress = "0xd544d7A5EF50c510f3E90863828EAba7E392907A";
+const factoryAddress = "0x103416cfCD0D0a32b904Ab4fb69dF6E5B5aaDf2b";
 
 async function ignition() {
   const [ceto, router, factory] = await getContract();
@@ -55,8 +55,17 @@ async function createETF(etfFactory) {
   const name = "MyToken";
   const symbol = "MTK";
   const tokenUri = "https://example.com/token/1";
-  const etf = await etfFactory.createETF(name, symbol, tokenUri, constitunents);
-  await etf.wait();
+  try {
+    const etf = await etfFactory.createETF(
+      name,
+      symbol,
+      tokenUri,
+      constitunents
+    );
+    await etf.wait();
+  } catch (e) {
+    console.log(e);
+  }
   let etfAddress = await etfFactory.etfListM("MTK");
   console.log(`MINT ETF===>${etfAddress}`);
   return etfAddress;
