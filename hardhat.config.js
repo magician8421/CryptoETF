@@ -10,5 +10,8 @@ module.exports = {
         blockNumber: 21864782,
       },
     },
+    docker_fork: {
+      url: "http://127.0.0.1:8000",
+    },
   },
 };
